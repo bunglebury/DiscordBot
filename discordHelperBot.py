@@ -1,26 +1,24 @@
-import discord
-import requests
-import asyncio
-import datetime
-import youtube_dl
+import discord          # Import the discord library
+import requests         # Import the requests library to make HTTP requests
+import asyncio          # Import the asyncio library for asynchronous programming
+import datetime         # Import the datetime library to work with dates and times
+import youtube_dl       # Import the youtube_dl library to download and extract YouTube videos
 
-
+# Set up the client object with the necessary intents
 intents = discord.Intents.default()
 intents.message_content = True
-
 client = discord.Client(intents=intents)
 
-
+# Define a coroutine to display the current time in the chat
 async def display_time(message):
     current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     await message.channel.send(f"Current time: {current_time}")
 
-
+# Define a coroutine to display a random picture of a dog in the chat
 async def display_dog(message):
     response = requests.get('https://dog.ceo/api/breeds/image/random')
     img_url = response.json()["message"]
     await message.channel.send(img_url)
-
 
 async def join_voice_channel(message):
     if not message.author.voice:
@@ -30,8 +28,9 @@ async def join_voice_channel(message):
     if not youtube_link:
         await message.channel.send("Please provide a valid YouTube link.")
         return
+    voice_client = None  # Define voice_client with a default value of None
     try:
-        with youtube_dl.YoutubeDL() as ydl:
+        with youtube_dl.YoutubeDL({'verbose': True}) as ydl:
             info = ydl.extract_info(youtube_link, download=False)
             video_url = info['formats'][0]['url']
         voice_channel = message.author.voice.channel
@@ -41,9 +40,10 @@ async def join_voice_channel(message):
     except Exception as e:
         await message.channel.send(f"An error occurred: {e}")
     finally:
-        await voice_client.disconnect()
+        if voice_client:  # Check if voice_client has been assigned a value
+            await voice_client.disconnect()
 
-
+# Define a coroutine to display a help message with a list of available commands
 async def display_help(message):
     help_text = "These are the available commands:\n"
     help_text += "- `$hello`: Say hello to the bot.\n"
@@ -52,7 +52,7 @@ async def display_help(message):
     help_text += "- `$joinvc <YouTube link>`: Join your voice channel and play the audio from the specified YouTube video.\n"
     await message.channel.send(help_text)
 
-
+# Define a coroutine to handle incoming messages and execute the appropriate command
 async def handle_command(message):
     command = message.content.lower().split(" ")[0]
     if command == "$hello":
@@ -68,10 +68,10 @@ async def handle_command(message):
     else:
         await message.channel.send(f"Unknown command: {command}")
 
-
+# Event handler that runs when the bot is ready to start receiving events
 @client.event
 async def on_ready():
-    print(f'{client.user} is reporting')
+        print(f'{client.user} is reporting')
 
 
 @client.event
