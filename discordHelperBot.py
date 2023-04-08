@@ -3,11 +3,26 @@ import requests         # Import the requests library to make HTTP requests
 import asyncio          # Import the asyncio library for asynchronous programming
 import datetime         # Import the datetime library to work with dates and times
 import youtube_dl       # Import the youtube_dl library to download and extract YouTube videos
+import openai
 
 # Set up the client object with the necessary intents
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
+
+openai.api_key = 'OPENAI API KEY HERE'
+async def generate_message(message):
+    prompt = message.content
+    response = openai.Completion.create(
+        engine="davinci",
+        prompt=prompt,
+        max_tokens=1024,
+        n=1,
+        stop=None,
+        temperature=0.7,
+    )
+    output_text = response.choices[0].text.strip()
+    await message.channel.send(output_text)
 
 # Define a coroutine to display the current time in the chat
 async def display_time(message):
@@ -56,7 +71,8 @@ async def display_help(message):
 async def handle_command(message):
     command = message.content.lower().split(" ")[0]
     if command == "$hello":
-        await message.channel.send("Hello!")
+        response = await generate_message(message)
+        await message.channel.send(response)
     elif command == "$day":
         await display_time(message)
     elif command == "$dog":
@@ -84,4 +100,4 @@ async def on_message(message):
 
 
 if __name__ == '__main__':
-    client.run('')
+    client.run('DISCORD BOT KEY HERE')
